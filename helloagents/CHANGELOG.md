@@ -63,6 +63,8 @@
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 
 ### 修复
+- **[devops]**: Dockerfile 增加国内镜像源与 npm/go 代理默认值
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[devops]**: Web 反代上游改为可配置的 `API_UPSTREAM`
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[web-ui]**: 修复生产构建类型错误并兼容 AntD Select/Image 类型

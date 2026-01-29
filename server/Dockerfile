@@ -1,11 +1,16 @@
 FROM golang:1.22-bookworm
 
-RUN apt-get update \
+ARG APT_MIRROR=mirrors.aliyun.com
+RUN sed -i "s/deb.debian.org/${APT_MIRROR}/g" /etc/apt/sources.list \
+  && sed -i "s/security.debian.org/${APT_MIRROR}/g" /etc/apt/sources.list \
+  && apt-get update \
   && apt-get install -y --no-install-recommends ffmpeg ca-certificates git \
   && rm -rf /var/lib/apt/lists/*
 
-ENV GOPROXY=https://goproxy.cn,direct
-ENV GOSUMDB=off
+ARG GOPROXY=https://goproxy.cn,direct
+ARG GOSUMDB=off
+ENV GOPROXY=${GOPROXY}
+ENV GOSUMDB=${GOSUMDB}
 
 WORKDIR /app
 

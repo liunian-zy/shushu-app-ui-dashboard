@@ -35,3 +35,7 @@
 - `JWT_SECRET` 必须配置，用于签发登录令牌
 - `APP_MODE=internal` 启动时会自动执行 `server/migrations/*.sql` 初始化草稿表
 - Web 生产容器通过 `web/nginx.conf.template` 反向代理 `/api`，上游由 `API_UPSTREAM` 控制
+- 国内网络优化：
+  - `server/Dockerfile` 默认使用 Debian 镜像源 `mirrors.aliyun.com`
+  - `server/Dockerfile` 默认使用 `GOPROXY=https://goproxy.cn,direct`
+  - `web/Dockerfile` 默认使用 `registry.npmmirror.com` 安装 npm 依赖
