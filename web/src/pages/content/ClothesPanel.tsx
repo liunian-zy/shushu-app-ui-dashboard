@@ -10,9 +10,10 @@ type ClothesPanelProps = {
   notify: Notify;
   operatorId?: number | null;
   ttsPresets?: TTSPreset[];
+  refreshTtsPresets?: () => void;
 };
 
-const ClothesPanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets }: ClothesPanelProps) => {
+const ClothesPanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets, refreshTtsPresets }: ClothesPanelProps) => {
   return (
     <PreferencePanel
       title="服饰偏好"
@@ -30,6 +31,7 @@ const ClothesPanel = ({ version, request, uploadFile, generateTTS, notify, opera
       notify={notify}
       operatorId={operatorId}
       ttsPresets={ttsPresets}
+      refreshTtsPresets={refreshTtsPresets}
     />
   );
 };

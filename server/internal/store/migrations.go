@@ -46,11 +46,22 @@ func ApplyMigrations(db *sql.DB) error {
         continue
       }
       if _, err := db.Exec(stmt); err != nil {
+        if isDuplicateColumnError(err) {
+          continue
+        }
         return fmt.Errorf("apply migration %s failed: %w", name, err)
       }
     }
   }
   return nil
+}
+
+func isDuplicateColumnError(err error) bool {
+  if err == nil {
+    return false
+  }
+  msg := strings.ToLower(err.Error())
+  return strings.Contains(msg, "duplicate column name")
 }
 
 func discoverMigrationsDir() (string, error) {

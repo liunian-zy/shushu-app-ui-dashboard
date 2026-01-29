@@ -18,6 +18,7 @@ type AppUIFieldsPanelProps = {
   notify: Notify;
   operatorId?: number | null;
   ttsPresets?: TTSPreset[];
+  refreshTtsPresets?: () => void;
 };
 
 type AppUIFormValues = {
@@ -35,7 +36,7 @@ type AppUIFormValues = {
   print_wait?: string;
 };
 
-const AppUIFieldsPanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets }: AppUIFieldsPanelProps) => {
+const AppUIFieldsPanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets, refreshTtsPresets }: AppUIFieldsPanelProps) => {
   const [form] = Form.useForm<AppUIFormValues>();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -261,6 +262,8 @@ const AppUIFieldsPanel = ({ version, request, uploadFile, generateTTS, notify, o
             text={step1TextValue ?? ""}
             disabled={!version?.id}
             presets={ttsPresets}
+            request={request}
+            onPresetsReload={refreshTtsPresets}
             onGenerate={(count, options) => {
               if (!version?.id) {
                 return Promise.resolve([]);
@@ -313,6 +316,8 @@ const AppUIFieldsPanel = ({ version, request, uploadFile, generateTTS, notify, o
             text={step2TextValue ?? ""}
             disabled={!version?.id}
             presets={ttsPresets}
+            request={request}
+            onPresetsReload={refreshTtsPresets}
             onGenerate={(count, options) => {
               if (!version?.id) {
                 return Promise.resolve([]);

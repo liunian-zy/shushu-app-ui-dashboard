@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 ### 新增
+- **[tts-service]**: TTS 增加语音详情查询以提供情绪信息
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[devops]**: Web 前端改为 Nginx 生产构建并使用 `WEB_PORT` 暴露
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[docs]**: 增加管理员/成员使用指南
@@ -18,6 +20,10 @@
 - **[server-api]**: 新增 TTS 预设表及 CRUD 接口并支持默认预设
   - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
 - **[web-ui]**: 媒体规则页新增 TTS 预设管理并接入语音生成参数
+  - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
+- **[web-ui]**: TTS 预设支持情绪参数与测试语音并发生成
+  - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
+- **[web-ui]**: 内容录入语音面板支持快速新增预设
   - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
 - **[web-ui]**: 轮播图批量上传支持智能压缩参数与同位置限制
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
@@ -63,6 +69,10 @@
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 
 ### 修复
+- **[server-api]**: 迁移忽略重复列错误并兼容新增情绪列
+  - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
+- **[web-ui]**: TTS 预设情绪选择移除不兼容 loading 属性以修复构建
+  - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
 - **[tts-service]**: 代理支持账号认证与可配置协议避免注册 407
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[devops]**: Debian 源切换兼容 bookworm 的 debian.sources

@@ -16,6 +16,7 @@ type TTSPreset struct {
   ID           int64
   Name         string
   VoiceID      string
+  EmotionName  string
   Volume       int
   Speed        float64
   Pitch        int
@@ -33,6 +34,7 @@ type TTSPreset struct {
 type ttsPresetPayload struct {
   Name         *string  `json:"name"`
   VoiceID      *string  `json:"voice_id"`
+  EmotionName  *string  `json:"emotion_name"`
   Volume       *int     `json:"volume"`
   Speed        *float64 `json:"speed"`
   Pitch        *int     `json:"pitch"`
@@ -49,6 +51,7 @@ type TTSPresetHandler struct {
 
 const (
   defaultVoiceID      = "70eb6772-4cd1-11f0-9276-00163e0fe4f9"
+  defaultEmotionName  = "Happy"
   defaultVolume       = 58
   defaultSpeed        = 1.0
   defaultPitch        = 56
@@ -61,6 +64,7 @@ func defaultTTSPreset() TTSPreset {
   return TTSPreset{
     Name:         "默认预设",
     VoiceID:      defaultVoiceID,
+    EmotionName:  defaultEmotionName,
     Volume:       defaultVolume,
     Speed:        defaultSpeed,
     Pitch:        defaultPitch,
@@ -125,7 +129,7 @@ func (h *TTSPresetHandler) List(c *gin.Context) {
     }
   }
 
-  query := "SELECT id, name, voice_id, volume, speed, pitch, stability, similarity, exaggeration, status, is_default, created_at, updated_at, created_by, updated_by FROM app_db_tts_presets"
+  query := "SELECT id, name, voice_id, emotion_name, volume, speed, pitch, stability, similarity, exaggeration, status, is_default, created_at, updated_at, created_by, updated_by FROM app_db_tts_presets"
   if !showAll {
     query += " WHERE status = 1"
   }
@@ -144,6 +148,7 @@ func (h *TTSPresetHandler) List(c *gin.Context) {
       id           int64
       name         sql.NullString
       voiceID      sql.NullString
+      emotionName  sql.NullString
       volume       sql.NullInt64
       speed        sql.NullFloat64
       pitch        sql.NullInt64
@@ -161,6 +166,7 @@ func (h *TTSPresetHandler) List(c *gin.Context) {
       &id,
       &name,
       &voiceID,
+      &emotionName,
       &volume,
       &speed,
       &pitch,
@@ -181,6 +187,7 @@ func (h *TTSPresetHandler) List(c *gin.Context) {
       "id":           id,
       "name":         nullableString(name),
       "voice_id":     nullableString(voiceID),
+      "emotion_name": nullableString(emotionName),
       "volume":       nullableInt64Pointer(volume),
       "speed":        nullableFloatPointer(speed),
       "pitch":        nullableInt64Pointer(pitch),
@@ -237,6 +244,7 @@ func (h *TTSPresetHandler) Create(c *gin.Context) {
   payload := map[string]interface{}{
     "name":         preset.Name,
     "voice_id":     preset.VoiceID,
+    "emotion_name": normalizeOptionalString(preset.EmotionName),
     "volume":       preset.Volume,
     "speed":        preset.Speed,
     "pitch":        preset.Pitch,
@@ -325,6 +333,7 @@ func (h *TTSPresetHandler) Update(c *gin.Context) {
   payload := map[string]interface{}{
     "name":         preset.Name,
     "voice_id":     preset.VoiceID,
+    "emotion_name": normalizeOptionalString(preset.EmotionName),
     "volume":       preset.Volume,
     "speed":        preset.Speed,
     "pitch":        preset.Pitch,
@@ -407,11 +416,12 @@ func fetchTTSPresetByID(db *sql.DB, id int64) (*TTSPreset, error) {
   if db == nil {
     return nil, errors.New("db not ready")
   }
-  row := db.QueryRow("SELECT id, name, voice_id, volume, speed, pitch, stability, similarity, exaggeration, status, is_default, created_at, updated_at, created_by, updated_by FROM app_db_tts_presets WHERE id = ? LIMIT 1", id)
+  row := db.QueryRow("SELECT id, name, voice_id, emotion_name, volume, speed, pitch, stability, similarity, exaggeration, status, is_default, created_at, updated_at, created_by, updated_by FROM app_db_tts_presets WHERE id = ? LIMIT 1", id)
   var preset TTSPreset
   var (
     name         sql.NullString
     voiceID      sql.NullString
+    emotionName  sql.NullString
     volume       sql.NullInt64
     speed        sql.NullFloat64
     pitch        sql.NullInt64
@@ -425,6 +435,7 @@ func fetchTTSPresetByID(db *sql.DB, id int64) (*TTSPreset, error) {
     &preset.ID,
     &name,
     &voiceID,
+    &emotionName,
     &volume,
     &speed,
     &pitch,
@@ -443,6 +454,7 @@ func fetchTTSPresetByID(db *sql.DB, id int64) (*TTSPreset, error) {
 
   preset.Name = nullableStringValue(name)
   preset.VoiceID = nullableStringValue(voiceID)
+  preset.EmotionName = nullableStringValue(emotionName)
   preset.Volume = int(nullableInt64ValueSafe(volume))
   preset.Speed = nullableFloatValue(speed)
   preset.Pitch = int(nullableInt64ValueSafe(pitch))
@@ -459,11 +471,12 @@ func fetchDefaultTTSPreset(db *sql.DB) (*TTSPreset, error) {
   if db == nil {
     return nil, errors.New("db not ready")
   }
-  row := db.QueryRow("SELECT id, name, voice_id, volume, speed, pitch, stability, similarity, exaggeration, status, is_default, created_at, updated_at, created_by, updated_by FROM app_db_tts_presets WHERE is_default = 1 LIMIT 1")
+  row := db.QueryRow("SELECT id, name, voice_id, emotion_name, volume, speed, pitch, stability, similarity, exaggeration, status, is_default, created_at, updated_at, created_by, updated_by FROM app_db_tts_presets WHERE is_default = 1 LIMIT 1")
   var preset TTSPreset
   var (
     name         sql.NullString
     voiceID      sql.NullString
+    emotionName  sql.NullString
     volume       sql.NullInt64
     speed        sql.NullFloat64
     pitch        sql.NullInt64
@@ -477,6 +490,7 @@ func fetchDefaultTTSPreset(db *sql.DB) (*TTSPreset, error) {
     &preset.ID,
     &name,
     &voiceID,
+    &emotionName,
     &volume,
     &speed,
     &pitch,
@@ -495,6 +509,7 @@ func fetchDefaultTTSPreset(db *sql.DB) (*TTSPreset, error) {
 
   preset.Name = nullableStringValue(name)
   preset.VoiceID = nullableStringValue(voiceID)
+  preset.EmotionName = nullableStringValue(emotionName)
   preset.Volume = int(nullableInt64ValueSafe(volume))
   preset.Speed = nullableFloatValue(speed)
   preset.Pitch = int(nullableInt64ValueSafe(pitch))
@@ -524,6 +539,12 @@ func applyPresetOverrides(base TTSPreset, req *ttsPresetPayload) (TTSPreset, err
       return base, errors.New("voice_id is required")
     }
     base.VoiceID = voice
+  }
+  if req.EmotionName != nil {
+    base.EmotionName = strings.TrimSpace(*req.EmotionName)
+  }
+  if req.EmotionName != nil {
+    base.EmotionName = strings.TrimSpace(*req.EmotionName)
   }
   if req.Volume != nil {
     base.Volume = *req.Volume
@@ -613,4 +634,12 @@ func nullableFloatValue(value sql.NullFloat64) float64 {
     return value.Float64
   }
   return 0
+}
+
+func normalizeOptionalString(value string) interface{} {
+  trimmed := strings.TrimSpace(value)
+  if trimmed == "" {
+    return nil
+  }
+  return trimmed
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Card, Col, Input, InputNumber, Row, Select, Slider, Space, Typography } from "antd";
-import type { TTSPreset, TTSOptions, TTSResult } from "./utils";
+import { Button, Card, Col, Input, InputNumber, Modal, Row, Select, Slider, Space, Typography, message } from "antd";
+import type { RequestFn, TTSPreset, TTSOptions, TTSResult } from "./utils";
 
 const { Text } = Typography;
 
@@ -10,11 +10,14 @@ type TTSInlinePanelProps = {
   presets?: TTSPreset[];
   onGenerate: (count: number, options: TTSOptions) => Promise<TTSResult[]>;
   onSelect: (result: TTSResult) => void;
+  request?: RequestFn;
+  onPresetsReload?: () => void;
   disabled?: boolean;
 };
 
 const defaultPreset = {
   voice_id: "70eb6772-4cd1-11f0-9276-00163e0fe4f9",
+  emotion_name: "Happy",
   volume: 58,
   speed: 1,
   pitch: 56,
@@ -23,19 +26,24 @@ const defaultPreset = {
   exaggeration: 0
 };
 
-const TTSInlinePanel = ({ title, text, presets, onGenerate, onSelect, disabled }: TTSInlinePanelProps) => {
+const TTSInlinePanel = ({ title, text, presets, onGenerate, onSelect, request, onPresetsReload, disabled }: TTSInlinePanelProps) => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [count, setCount] = useState(3);
   const [loading, setLoading] = useState(false);
   const [options, setOptions] = useState<TTSResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [presetId, setPresetId] = useState<number | null>(null);
   const [voiceId, setVoiceId] = useState<string>(defaultPreset.voice_id);
+  const [emotionName, setEmotionName] = useState<string>(defaultPreset.emotion_name);
   const [volume, setVolume] = useState<number>(defaultPreset.volume);
   const [speed, setSpeed] = useState<number>(defaultPreset.speed);
   const [pitch, setPitch] = useState<number>(defaultPreset.pitch);
   const [stability, setStability] = useState<number>(defaultPreset.stability);
   const [similarity, setSimilarity] = useState<number>(defaultPreset.similarity);
   const [exaggeration, setExaggeration] = useState<number>(defaultPreset.exaggeration);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createName, setCreateName] = useState("");
+  const [createLoading, setCreateLoading] = useState(false);
 
   useEffect(() => {
     setOptions([]);
@@ -61,6 +69,7 @@ const TTSInlinePanel = ({ title, text, presets, onGenerate, onSelect, disabled }
   const applyPreset = (preset: TTSPreset | null) => {
     if (!preset) {
       setVoiceId(defaultPreset.voice_id);
+      setEmotionName(defaultPreset.emotion_name);
       setVolume(defaultPreset.volume);
       setSpeed(defaultPreset.speed);
       setPitch(defaultPreset.pitch);
@@ -70,6 +79,7 @@ const TTSInlinePanel = ({ title, text, presets, onGenerate, onSelect, disabled }
       return;
     }
     setVoiceId(preset.voice_id || defaultPreset.voice_id);
+    setEmotionName(preset.emotion_name || defaultPreset.emotion_name);
     setVolume(preset.volume ?? defaultPreset.volume);
     setSpeed(preset.speed ?? defaultPreset.speed);
     setPitch(preset.pitch ?? defaultPreset.pitch);
@@ -110,6 +120,7 @@ const TTSInlinePanel = ({ title, text, presets, onGenerate, onSelect, disabled }
       const result = await onGenerate(count, {
         preset_id: presetId ?? undefined,
         voice_id: voiceId.trim() || undefined,
+        emotion_name: emotionName.trim() || undefined,
         volume,
         speed,
         pitch,
@@ -128,9 +139,54 @@ const TTSInlinePanel = ({ title, text, presets, onGenerate, onSelect, disabled }
     }
   };
 
+  const openCreatePreset = () => {
+    setCreateName("");
+    setCreateOpen(true);
+  };
+
+  const submitCreatePreset = async () => {
+    if (!request) {
+      return;
+    }
+    const name = createName.trim();
+    if (!name) {
+      messageApi.warning("请输入预设名称");
+      return;
+    }
+    setCreateLoading(true);
+    try {
+      await request("/api/tts/presets", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          voice_id: voiceId.trim() || defaultPreset.voice_id,
+          emotion_name: emotionName.trim() || undefined,
+          volume,
+          speed,
+          pitch,
+          stability,
+          similarity,
+          exaggeration,
+          status: 1,
+          is_default: 0
+        })
+      });
+      messageApi.success("预设已创建");
+      setCreateOpen(false);
+      if (onPresetsReload) {
+        onPresetsReload();
+      }
+    } catch (err) {
+      messageApi.error(err instanceof Error ? err.message : "创建失败");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   return (
     <Card size="small" style={{ borderRadius: 12 }}>
       <Space direction="vertical" size={12} style={{ width: "100%" }}>
+        {contextHolder}
         {title ? <Text strong>{title}</Text> : null}
         <Space direction="vertical" size={4}>
           <Text type="secondary">语音参数支持选择预设，并可在生成前微调。</Text>
@@ -148,6 +204,9 @@ const TTSInlinePanel = ({ title, text, presets, onGenerate, onSelect, disabled }
           <Button onClick={() => applyPreset(selectedPreset)} disabled={!selectedPreset}>
             恢复预设值
           </Button>
+          <Button onClick={openCreatePreset} disabled={!request}>
+            新增预设
+          </Button>
         </Space>
         <Space direction="vertical" size={8} style={{ width: "100%" }}>
           <Text type="secondary">voice_id：用于指定音色，留空时使用默认音色。</Text>
@@ -155,6 +214,14 @@ const TTSInlinePanel = ({ title, text, presets, onGenerate, onSelect, disabled }
             value={voiceId}
             onChange={(event) => setVoiceId(event.target.value)}
             placeholder="手动输入 voice_id"
+          />
+        </Space>
+        <Space direction="vertical" size={8} style={{ width: "100%" }}>
+          <Text type="secondary">emotion_name：可选情绪参数，留空时使用服务默认值。</Text>
+          <Input
+            value={emotionName}
+            onChange={(event) => setEmotionName(event.target.value)}
+            placeholder="例如：Happy / Default"
           />
         </Space>
         <Space direction="vertical" size={12} style={{ width: "100%" }}>
@@ -246,6 +313,25 @@ const TTSInlinePanel = ({ title, text, presets, onGenerate, onSelect, disabled }
           ))}
         </Space>
       </Space>
+      <Modal
+        title="新增语音预设"
+        open={createOpen}
+        onCancel={() => setCreateOpen(false)}
+        onOk={submitCreatePreset}
+        okText="保存"
+        cancelText="取消"
+        confirmLoading={createLoading}
+        destroyOnClose
+      >
+        <Space direction="vertical" size={12} style={{ width: "100%" }}>
+          <Text type="secondary">将当前参数保存为新的预设名称。</Text>
+          <Input
+            value={createName}
+            onChange={(event) => setCreateName(event.target.value)}
+            placeholder="例如：场景默认女声"
+          />
+        </Space>
+      </Modal>
     </Card>
   );
 };

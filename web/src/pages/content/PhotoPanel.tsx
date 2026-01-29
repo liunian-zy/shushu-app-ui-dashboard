@@ -10,9 +10,10 @@ type PhotoPanelProps = {
   notify: Notify;
   operatorId?: number | null;
   ttsPresets?: TTSPreset[];
+  refreshTtsPresets?: () => void;
 };
 
-const PhotoPanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets }: PhotoPanelProps) => {
+const PhotoPanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets, refreshTtsPresets }: PhotoPanelProps) => {
   return (
     <PreferencePanel
       title="拍摄偏好"
@@ -30,6 +31,7 @@ const PhotoPanel = ({ version, request, uploadFile, generateTTS, notify, operato
       notify={notify}
       operatorId={operatorId}
       ttsPresets={ttsPresets}
+      refreshTtsPresets={refreshTtsPresets}
     />
   );
 };

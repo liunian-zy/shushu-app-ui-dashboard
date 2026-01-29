@@ -37,6 +37,7 @@ type ScenePanelProps = {
   notify: Notify;
   operatorId?: number | null;
   ttsPresets?: TTSPreset[];
+  refreshTtsPresets?: () => void;
 };
 
 type SceneFormValues = {
@@ -48,7 +49,7 @@ type SceneFormValues = {
   status?: boolean;
 };
 
-const ScenePanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets }: ScenePanelProps) => {
+const ScenePanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets, refreshTtsPresets }: ScenePanelProps) => {
   const [items, setItems] = useState<SceneItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -500,6 +501,8 @@ const ScenePanel = ({ version, request, uploadFile, generateTTS, notify, operato
             text={descValue ?? ""}
             disabled={!version?.id}
             presets={ttsPresets}
+            request={request}
+            onPresetsReload={refreshTtsPresets}
             onGenerate={(count, options) => {
               if (!version?.id) {
                 return Promise.resolve([]);

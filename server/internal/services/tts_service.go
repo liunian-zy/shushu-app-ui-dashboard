@@ -46,6 +46,17 @@ type TTSConvertResponse struct {
   Data     *TTSVoiceData `json:"data"`
 }
 
+type TTSVoiceDetailRequest struct {
+  VoiceID string `json:"voice_id"`
+  SlangID int    `json:"slang_id"`
+}
+
+type TTSVoiceDetailResponse struct {
+  Success bool            `json:"success"`
+  Message string          `json:"message"`
+  Data    json.RawMessage `json:"data"`
+}
+
 // NewTTSService creates a new TTS service instance.
 // Args:
 //   cfg: App config instance with TTS settings.
@@ -117,6 +128,71 @@ func (s *TTSService) Convert(ctx context.Context, req *TTSConvertRequest) (*TTSC
     msg := strings.TrimSpace(result.Message)
     if msg == "" {
       msg = "tts convert failed"
+    }
+    return nil, fmt.Errorf(msg)
+  }
+  return &result, nil
+}
+
+// VoiceDetail fetches voice detail metadata from the TTS service.
+// Args:
+//   ctx: Request context.
+//   voiceID: Voice id.
+//   slangID: Accent slang id.
+// Returns:
+//   *TTSVoiceDetailResponse: Response payload.
+//   error: Error when request fails.
+func (s *TTSService) VoiceDetail(ctx context.Context, voiceID string, slangID int) (*TTSVoiceDetailResponse, error) {
+  if s == nil {
+    return nil, fmt.Errorf("invalid tts service")
+  }
+  trimmed := strings.TrimSpace(voiceID)
+  if trimmed == "" {
+    return nil, fmt.Errorf("voice_id is required")
+  }
+  if slangID <= 0 {
+    slangID = 18
+  }
+
+  payload, err := json.Marshal(&TTSVoiceDetailRequest{
+    VoiceID: trimmed,
+    SlangID: slangID,
+  })
+  if err != nil {
+    return nil, err
+  }
+
+  endpoint := s.baseURL + "/api/tts/voice-detail"
+  httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
+  if err != nil {
+    return nil, err
+  }
+  httpReq.Header.Set("Content-Type", "application/json")
+  httpReq.Header.Set("X-API-Key", s.apiKey)
+
+  resp, err := s.client.Do(httpReq)
+  if err != nil {
+    return nil, err
+  }
+  defer resp.Body.Close()
+
+  body, err := io.ReadAll(resp.Body)
+  if err != nil {
+    return nil, err
+  }
+
+  if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+    return nil, fmt.Errorf("tts voice detail failed: %s", strings.TrimSpace(string(body)))
+  }
+
+  var result TTSVoiceDetailResponse
+  if err := json.Unmarshal(body, &result); err != nil {
+    return nil, err
+  }
+  if !result.Success {
+    msg := strings.TrimSpace(result.Message)
+    if msg == "" {
+      msg = "tts voice detail failed"
     }
     return nil, fmt.Errorf(msg)
   }

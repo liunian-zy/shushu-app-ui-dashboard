@@ -35,6 +35,7 @@ type ConfigExtraPanelProps = {
   notify: Notify;
   operatorId?: number | null;
   ttsPresets?: TTSPreset[];
+  refreshTtsPresets?: () => void;
 };
 
 type ExtraFormValues = {
@@ -51,7 +52,7 @@ const extraFieldOptions = [
   { value: "photo_hobbies", label: "拍摄偏好" }
 ];
 
-const ConfigExtraPanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets }: ConfigExtraPanelProps) => {
+const ConfigExtraPanel = ({ version, request, uploadFile, generateTTS, notify, operatorId, ttsPresets, refreshTtsPresets }: ConfigExtraPanelProps) => {
   const [items, setItems] = useState<ExtraStepItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -528,6 +529,8 @@ const ConfigExtraPanel = ({ version, request, uploadFile, generateTTS, notify, o
             text={musicTextValue ?? ""}
             disabled={!version?.id}
             presets={ttsPresets}
+            request={request}
+            onPresetsReload={refreshTtsPresets}
             onGenerate={(count, options) => {
               if (!version?.id) {
                 return Promise.resolve([]);

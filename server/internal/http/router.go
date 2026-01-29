@@ -139,6 +139,7 @@ func NewRouter(cfg *config.Config, deps *Deps) *gin.Engine {
 
   ttsHandler := handlers.NewTTSHandler(cfg, deps.DB, deps.Redis)
   secured.POST("/tts/convert", ttsHandler.Convert)
+  secured.POST("/tts/voice-detail", ttsHandler.VoiceDetail)
 
   return router
 }

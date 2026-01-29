@@ -98,6 +98,7 @@ const ContentEntry = () => {
         draft_version_id: draftVersionId,
         preset_id: options?.preset_id,
         voice_id: options?.voice_id,
+        emotion_name: options?.emotion_name,
         volume: options?.volume,
         speed: options?.speed,
         pitch: options?.pitch,
@@ -310,6 +311,7 @@ const ContentEntry = () => {
           notify={notify}
           operatorId={operatorId}
           ttsPresets={ttsPresets}
+          refreshTtsPresets={loadTtsPresets}
         />
       )
     },
@@ -325,6 +327,7 @@ const ContentEntry = () => {
           notify={notify}
           operatorId={operatorId}
           ttsPresets={ttsPresets}
+          refreshTtsPresets={loadTtsPresets}
         />
       )
     },
@@ -340,6 +343,7 @@ const ContentEntry = () => {
           notify={notify}
           operatorId={operatorId}
           ttsPresets={ttsPresets}
+          refreshTtsPresets={loadTtsPresets}
         />
       )
     },
@@ -355,6 +359,7 @@ const ContentEntry = () => {
           notify={notify}
           operatorId={operatorId}
           ttsPresets={ttsPresets}
+          refreshTtsPresets={loadTtsPresets}
         />
       )
     },
@@ -370,6 +375,7 @@ const ContentEntry = () => {
           notify={notify}
           operatorId={operatorId}
           ttsPresets={ttsPresets}
+          refreshTtsPresets={loadTtsPresets}
         />
       )
     }

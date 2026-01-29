@@ -2,6 +2,7 @@ package handlers
 
 import (
   "database/sql"
+  "encoding/json"
   "net/http"
   "os"
   "path/filepath"
@@ -36,6 +37,11 @@ type ttsRequest struct {
   CountryCode    *string  `json:"country_code"`
   ModuleKey      string   `json:"module_key"`
   DraftVersionID int64    `json:"draft_version_id"`
+}
+
+type ttsVoiceDetailRequest struct {
+  VoiceID string `json:"voice_id"`
+  SlangID int    `json:"slang_id"`
 }
 
 // NewTTSHandler creates a handler for TTS requests.
@@ -143,6 +149,51 @@ func (h *TTSHandler) Convert(c *gin.Context) {
   })
 }
 
+// VoiceDetail returns emotion/accent info for a voice id.
+// Args:
+//   c: Gin context.
+// Returns:
+//   None.
+func (h *TTSHandler) VoiceDetail(c *gin.Context) {
+  var req ttsVoiceDetailRequest
+  if err := c.ShouldBindJSON(&req); err != nil {
+    c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+    return
+  }
+  voiceID := strings.TrimSpace(req.VoiceID)
+  if voiceID == "" {
+    c.JSON(http.StatusBadRequest, gin.H{"error": "voice_id is required"})
+    return
+  }
+  if req.SlangID <= 0 {
+    req.SlangID = 18
+  }
+
+  ttsService, err := services.NewTTSService(h.cfg)
+  if err != nil {
+    c.JSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
+    return
+  }
+
+  detail, err := ttsService.VoiceDetail(c.Request.Context(), voiceID, req.SlangID)
+  if err != nil {
+    c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+    return
+  }
+
+  if len(detail.Data) == 0 {
+    c.JSON(http.StatusOK, gin.H{"data": gin.H{}})
+    return
+  }
+
+  var payload map[string]interface{}
+  if err := json.Unmarshal(detail.Data, &payload); err != nil {
+    c.JSON(http.StatusInternalServerError, gin.H{"error": "decode failed"})
+    return
+  }
+  c.JSON(http.StatusOK, gin.H{"data": payload})
+}
+
 func buildTTSConvertRequest(req *ttsRequest, preset *TTSPreset) *services.TTSConvertRequest {
   voice := ""
   volume := defaultVolume
@@ -151,6 +202,7 @@ func buildTTSConvertRequest(req *ttsRequest, preset *TTSPreset) *services.TTSCon
   stability := defaultStability
   similarity := defaultSimilarity
   exaggeration := defaultExaggeration
+  presetEmotion := ""
   if preset != nil {
     voice = preset.VoiceID
     volume = preset.Volume
@@ -159,9 +211,13 @@ func buildTTSConvertRequest(req *ttsRequest, preset *TTSPreset) *services.TTSCon
     stability = preset.Stability
     similarity = preset.Similarity
     exaggeration = preset.Exaggeration
+    presetEmotion = preset.EmotionName
   }
   cleanedVoice := trimStringPointer(&voice)
   cleanedEmotion := trimStringPointer(req.EmotionName)
+  if cleanedEmotion == nil {
+    cleanedEmotion = trimStringPointer(&presetEmotion)
+  }
   cleanedAccent := trimStringPointer(req.Accent)
   cleanedCountry := trimStringPointer(req.CountryCode)
 

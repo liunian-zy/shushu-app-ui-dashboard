@@ -877,6 +877,83 @@ export const textToSpeech = async (text, options = {}) => {
   }
 };
 
+// 获取语音详情（含情绪/口音信息）
+export const getVoiceDetail = async (voiceId, slangId = 18) => {
+  if (!voiceId || !String(voiceId).trim()) {
+    throw new Error('voice_id is required');
+  }
+
+  const account = await accountPool.acquireAccount();
+
+  const makeRequest = async (acc) => {
+    const url = `${TTS_API_BASE}/v3/voice/detail`;
+    const formData = new FormData();
+    formData.append('voice_id', String(voiceId).trim());
+    formData.append('slang_id', String(slangId || 18));
+    formData.append('session_id', acc.session_id);
+    formData.append('tourist_id', acc.tourist_id);
+
+    const headers = {
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'zh-CN,zh;q=0.9,ja;q=0.8,ko;q=0.7,fr;q=0.6,de;q=0.5,zh-TW;q=0.4,ru;q=0.3,en;q=0.2,el;q=0.1,it;q=0.1',
+      'Connection': 'keep-alive',
+      'Device': acc.device_id,
+      'Origin': 'https://www.topmediai.com',
+      'Referer': 'https://www.topmediai.com/',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'cross-site',
+      'Site-Initializing': 'www.topmediai.com',
+      'TouristCode': acc.tourist_id,
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+      'Web-Req': '1',
+      'X-Pnab': '1',
+      'X-Requested-With': 'TTS',
+      ...formData.getHeaders()
+    };
+
+    const requestBody = {
+      voice_id: String(voiceId).trim(),
+      slang_id: String(slangId || 18),
+      tourist_id: acc.tourist_id
+    };
+
+    const startTime = Date.now();
+    logRequest('POST', url, headers, requestBody);
+
+    try {
+      const response = await axios.post(url, formData, { headers });
+      const duration = Date.now() - startTime;
+      logResponse('POST', url, response.status, response.data, duration);
+      return response.data;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      logError('POST', url, error, duration);
+      throw error;
+    }
+  };
+
+  try {
+    const result = await makeRequest(account);
+
+    if (result.check_code !== 200000) {
+      accountPool.releaseAccount(account.id, false);
+      throw new Error(result.message || '获取语音详情失败');
+    }
+
+    accountPool.releaseAccount(account.id, true);
+    return result.data;
+  } catch (error) {
+    const accountStillBusy = accountPool.accounts.find(
+      acc => acc.id === account.id && acc.status === AccountStatus.BUSY
+    );
+    if (accountStillBusy) {
+      accountPool.releaseAccount(account.id, false);
+    }
+    throw error;
+  }
+};
+
 // 下载音频文件
 export const downloadAudio = async (url) => {
   const startTime = Date.now();

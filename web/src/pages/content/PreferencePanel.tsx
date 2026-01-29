@@ -59,6 +59,7 @@ type PreferencePanelProps = {
   notify: Notify;
   operatorId?: number | null;
   ttsPresets?: TTSPreset[];
+  refreshTtsPresets?: () => void;
 };
 
 type PreferenceFormValues = {
@@ -86,7 +87,8 @@ const PreferencePanel = ({
   generateTTS,
   notify,
   operatorId,
-  ttsPresets
+  ttsPresets,
+  refreshTtsPresets
 }: PreferencePanelProps) => {
   const [items, setItems] = useState<PreferenceItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -544,6 +546,8 @@ const PreferencePanel = ({
             text={musicTextValue ?? ""}
             disabled={!version?.id}
             presets={ttsPresets}
+            request={request}
+            onPresetsReload={refreshTtsPresets}
             onGenerate={(count, options) => {
               if (!version?.id) {
                 return Promise.resolve([]);

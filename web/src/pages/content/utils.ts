@@ -20,6 +20,7 @@ export type TTSPreset = {
   id: number;
   name?: string | null;
   voice_id?: string | null;
+  emotion_name?: string | null;
   volume?: number | null;
   speed?: number | null;
   pitch?: number | null;
@@ -33,6 +34,7 @@ export type TTSPreset = {
 export type TTSOptions = {
   preset_id?: number;
   voice_id?: string;
+  emotion_name?: string;
   volume?: number;
   speed?: number;
   pitch?: number;
