@@ -63,6 +63,8 @@
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 
 ### 修复
+- **[devops]**: Debian 源切换兼容 bookworm 的 debian.sources
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[devops]**: Dockerfile 增加国内镜像源与 npm/go 代理默认值
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[devops]**: Web 反代上游改为可配置的 `API_UPSTREAM`
