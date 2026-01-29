@@ -10,7 +10,16 @@ services:
       APP_PORT: ${APP_PORT:-18080}
       APP_MODE: online
       MYSQL_DSN: ${MYSQL_DSN:-user:password@tcp(host.docker.internal:3306)/database?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai&time_zone=%27%2B08:00%27}
+      REDIS_ADDR: ${REDIS_ADDR:-redis:6379}
       SYNC_API_KEY: ${SYNC_API_KEY:-changeme}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "${APP_PORT:-18080}:${APP_PORT:-18080}"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
     restart: unless-stopped

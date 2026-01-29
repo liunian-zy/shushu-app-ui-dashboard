@@ -185,6 +185,9 @@
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 
 ### 微调
+- **[devops]**: 线上编排内置 Redis 服务并补齐宿主机解析
+  - 类型: 微调（无方案包）
+  - 文件: docker-compose.online.yml:9-25, .env.online:1-5
 - **[web-ui]**: 页面配置语音生成改为内联候选面板
   - 类型: 微调（无方案包）
   - 文件: web/src/pages/content/AppUIFieldsPanel.tsx:254-324
