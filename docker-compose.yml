@@ -82,9 +82,9 @@ services:
     build:
       context: ./web
     environment:
-      VITE_API_PROXY: http://server:${APP_PORT:-18080}
+      API_UPSTREAM: ${API_UPSTREAM:-http://server:${APP_PORT:-18080}}
     ports:
-      - "5173:5173"
+      - "${WEB_PORT:-5173}:80"
     depends_on:
       - server
     restart: unless-stopped
