@@ -1,0 +1,204 @@
+# 变更日志
+
+## [Unreleased]
+
+### 新增
+- **[docs]**: 增加管理员/成员使用指南
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 概览页支持按版本筛选并加载任务/媒体/同步摘要
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 增加概览统计接口提供任务/媒体/同步汇总
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[devops]**: 添加基础 `.gitignore` 覆盖环境变量、构建产物与本地数据
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[devops]**: 新增 app_db_ 数据导出/导入脚本
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 新增 TTS 预设表及 CRUD 接口并支持默认预设
+  - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
+- **[web-ui]**: 媒体规则页新增 TTS 预设管理并接入语音生成参数
+  - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
+- **[web-ui]**: 轮播图批量上传支持智能压缩参数与同位置限制
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 内容录入模块列表增加提交状态/启用状态等筛选条件
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 增加登录页、权限守卫与管理员入口控制
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 任务看板支持筛选、指派、协作与操作历史
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 版本配置页支持草稿版本创建与 Feishu 字段编辑
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 内容录入页覆盖轮播图/身份/场景/配置项/偏好/打印中视频
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 媒体规则页补齐规则管理、压缩工具与身份模板管理
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 内容录入页支持本地草稿、提交/确认与差异对比
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 操作历史页覆盖提交记录、字段历史、媒体版本与审计日志
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 增加审计日志、字段历史与媒体版本查询接口
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 支持内网推送与线上 API Key 同步模式
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[devops]**: 增加本地双服务环境变量与线上 compose 编排
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 增加账号管理页并补齐概览入口跳转
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 轮播图支持批量上传、批量检测与默认标题填充
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 语音生成支持多候选试听选择并提供拖拽上传入口
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 压缩工具增加常用预设与参数快捷配置
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 内容录入支持按模块选择同步到线上
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 版本配置支持单独同步到线上
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 媒体规则支持比例约束、内置预设与压缩对比预览
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 媒体校验支持比例检测与无规则提示
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 本地与 OSS 上传路径统一随机化文件名
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+
+### 修复
+- **[web-ui]**: 任务操作历史显示提交人真实姓名并补齐完成上传文案
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 任务操作历史接口补充操作人姓名与用户名
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[devops]**: Compose 改为统一读取根目录 `.env` 与 `.env.online`
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[devops]**: 内网 MySQL 改为容器并等待健康状态后启动 API
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 模板应用时复制本地图片避免后续清理影响模板复用
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[devops]**: 修正 Redis 宿主机映射端口默认值
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 修正顶部标题溢出与弹窗高度限制
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 本地文件预览改为公开读取，避免媒体预览缺失 token
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 草稿/同步 SQL 对 `desc` 字段加引号避免查询失败
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 身份模板列表查询兼容 ONLY_FULL_GROUP_BY
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 提交记录增加提交人/确认人名称字段
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 内网启动时自动执行草稿表迁移脚本
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 媒体处理支持预设规则覆盖与无损压缩模式
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 同步校验按模块过滤非目标字段
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 场景录入移除水印/OSS 样式字段
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 编辑弹窗回填数据并支持图片点击放大预览
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 修复前端构建类型错误并稳定编辑回填时机
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 同步支持版本配置模块并校验未同步版本
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 身份模板套用返回数据库错误详情便于排障
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 同步模块参数校验非法值并提前报错
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 身份模板套用先读模板项避免连接 busy buffer
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 媒体压缩返回本地预览 URL 避免压缩后预览失败
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 媒体压缩/校验支持未带 local 前缀的本地路径识别
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 修复媒体校验处理中的未使用变量导致编译失败
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 智能压缩需手动确认应用并保留对比预览
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 媒体压缩输出文件名随机化并返回 OSS 预览链接
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 草稿回显优先读取本地文件路径避免误用 OSS
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 媒体校验返回规则字段统一为 snake_case 避免前端显示 0×0
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[devops]**: MySQL 连接统一设置为 UTC+8 时区参数
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 智能压缩默认优先采用规则尺寸而非原图尺寸
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 智能压缩默认按规则比例裁切并避免超出原图尺寸
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 智能压缩提供规则比例推荐尺寸与自定义自动计算
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 智能压缩弹窗展示规则摘要并自动加载推荐尺寸
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 规则摘要与媒体规则列表避免显示 0×0 尺寸占位
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 智能压缩根据可用选项自动修正默认调整方式
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 表单弹窗合并紧凑字段布局以减少空白
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 表单弹窗整体宽度加宽以提升可视空间
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 文件校验结果在按钮区域同步展示并限制预览尺寸
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 媒体压缩保存资产失败时返回详细错误并增加重试
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 媒体资产/版本入库前规范化 format 字段避免超长
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 视频压缩统一使用 CRF 28 + slow 预设与 AAC 音频压缩
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 文件校验完成后自动滚动到校验详情
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 文件大小显示优化为 KB/MB 并补充视频压缩前后预览
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 媒体规则预设首次选择时保证完整回填字段
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 媒体规则预设首次选择时同步等待字段挂载再回填
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 媒体规则预设回填改为基于预设选择与媒体类型联动刷新
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 媒体规则预设首次选择使用延迟回填确保字段已挂载
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 轮播图批量上传增加批量智能压缩与批量设置位置
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 轮播图移除标题字段录入与列表展示
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 内容录入列表默认每页 10 条并允许调整分页大小
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 轮播图同步时将右侧类型从 3 映射为线上 0
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: Modal 使用 styles.body 替代 bodyStyle 以兼容新版 AntD
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[devops]**: TTS 服务内置到项目目录并更新 compose 挂载路径
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[tts-service]**: 代理协议缺失时默认使用 http 避免 undefined 日志
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: MySQL DSN 自动补齐 Asia/Shanghai 与 +08:00 时区参数并设置本地时区
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 媒体比例校验改为严格匹配无误差容忍
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+
+### 微调
+- **[web-ui]**: 页面配置语音生成改为内联候选面板
+  - 类型: 微调（无方案包）
+  - 文件: web/src/pages/content/AppUIFieldsPanel.tsx:254-324
+- **[server-api]**: 同步上传时避免在读取行内执行更新以修复 busy buffer
+  - 类型: 微调（无方案包）
+  - 文件: server/internal/http/handlers/task_upload.go:122
+
+## [X.Y.Z] - YYYY-MM-DD
+
+### 新增
+- **[{模块名}]**: {变更描述}
+  - 方案: [{YYYYMMDDHHMM}_{feature}](archive/{YYYY-MM}/{YYYYMMDDHHMM}_{feature}/)
+  - 决策: {feature}#D001({决策摘要})
+
+### 修复
+- **[{模块名}]**: {修复描述}
+  - 方案: [{YYYYMMDDHHMM}_{fix}](archive/{YYYY-MM}/{YYYYMMDDHHMM}_{fix}/)
+
+### 微调
+- **[{模块名}]**: {微调描述}
+  - 类型: 微调（无方案包）
+  - 文件: {文件路径}:{行号范围}
+
+### 回滚
+- **[{模块名}]**: 回滚至 {版本/提交}
+  - 原因: {回滚原因}
+  - 方案: [{原方案包}](archive/{YYYY-MM}/{原方案包}/)

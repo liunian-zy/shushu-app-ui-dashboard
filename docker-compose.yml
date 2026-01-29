@@ -1,0 +1,94 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-shushu_photo}
+      TZ: Asia/Shanghai
+    ports:
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD:-changeme}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_HOST_PORT:-16379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  tts:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./tts:/app
+    environment:
+      PORT: 3001
+      API_KEY: ${TTS_API_KEY:-changeme}
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+    env_file:
+      - ./.env
+    environment:
+      APP_PORT: ${APP_PORT:-18080}
+      APP_MODE: ${APP_MODE:-internal}
+      MYSQL_DSN: root:${MYSQL_ROOT_PASSWORD:-changeme}@tcp(mysql:3306)/${MYSQL_DATABASE:-shushu_photo}?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai&time_zone=%27%2B08:00%27
+      REDIS_ADDR: redis:6379
+      LOCAL_STORAGE_ROOT: ${LOCAL_STORAGE_ROOT:-/data/shushu-app-ui/uploads}
+      LOCAL_STORAGE_BASE_URL: ${LOCAL_STORAGE_BASE_URL:-/api/local-files/}
+      SYNC_TARGET_URL: ${SYNC_TARGET_URL:-}
+      SYNC_API_KEY: ${SYNC_API_KEY:-}
+      SYNC_TIMEOUT_SECONDS: ${SYNC_TIMEOUT_SECONDS:-20}
+      TTS_BASE_URL: http://tts:3001
+      TTS_API_KEY: ${TTS_API_KEY:-changeme}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret}
+      JWT_ISSUER: ${JWT_ISSUER:-shushu-app-ui-dashboard}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
+    volumes:
+      - ${LOCAL_STORAGE_HOST_PATH:-./data/uploads}:${LOCAL_STORAGE_ROOT:-/data/shushu-app-ui/uploads}
+    ports:
+      - "${APP_PORT:-18080}:${APP_PORT:-18080}"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      tts:
+        condition: service_started
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+    environment:
+      VITE_API_PROXY: http://server:${APP_PORT:-18080}
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:

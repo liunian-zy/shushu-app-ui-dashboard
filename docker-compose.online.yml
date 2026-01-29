@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  server:
+    build:
+      context: ./server
+    env_file:
+      - ./.env.online
+    environment:
+      APP_PORT: ${APP_PORT:-18080}
+      APP_MODE: online
+      MYSQL_DSN: ${MYSQL_DSN:-user:password@tcp(host.docker.internal:3306)/database?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai&time_zone=%27%2B08:00%27}
+      SYNC_API_KEY: ${SYNC_API_KEY:-changeme}
+    ports:
+      - "${APP_PORT:-18080}:${APP_PORT:-18080}"
+    restart: unless-stopped
