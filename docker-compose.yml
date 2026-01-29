@@ -83,6 +83,7 @@ services:
       context: ./web
     environment:
       API_UPSTREAM: ${API_UPSTREAM:-http://server:${APP_PORT:-18080}}
+      NGINX_CLIENT_MAX_BODY: ${NGINX_CLIENT_MAX_BODY:-200m}
     ports:
       - "${WEB_PORT:-5173}:80"
     depends_on:
