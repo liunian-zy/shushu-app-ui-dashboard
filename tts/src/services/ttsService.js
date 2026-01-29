@@ -115,8 +115,11 @@ const logProxy = (action, data) => {
 
 // ==================== 代理IP池管理 ====================
 
-const PROXY_API_URL = 'https://share.proxy.qg.net/get?key=UTQNELRF&pwd=098F606CFF96';
-const PROXY_REFRESH_INTERVAL = 5 * 60 * 1000; // 5分钟刷新一次代理列表
+const PROXY_API_URL = process.env.PROXY_API_URL || 'https://share.proxy.qg.net/get?key=UTQNELRF&pwd=098F606CFF96';
+const PROXY_USERNAME = process.env.PROXY_USERNAME || 'UTQNELRF';
+const PROXY_PASSWORD = process.env.PROXY_PASSWORD || '098F606CFF96';
+const PROXY_DEFAULT_PROTOCOL = (process.env.PROXY_PROTOCOL || 'http').toLowerCase();
+const PROXY_REFRESH_INTERVAL = 1 * 60 * 1000; // 5分钟刷新一次代理列表
 const PROXY_FETCH_COUNT = 5; // 一次获取5条代理
 
 class ProxyPool {
@@ -165,7 +168,10 @@ class ProxyPool {
               port: parseInt(port),
               area: p.area,
               isp: p.isp,
-              deadline: p.deadline
+              deadline: p.deadline,
+              protocol: (p.protocol || p.scheme || PROXY_DEFAULT_PROTOCOL || 'http').toLowerCase(),
+              username: p.username || p.user || p.account || p.uname || '',
+              password: p.password || p.pass || p.pwd || ''
             };
           });
 
@@ -224,10 +230,21 @@ class ProxyPool {
     if (!proxy) return null;
 
     const { ip, port } = proxy;
+    const protocol = (proxy.protocol || PROXY_DEFAULT_PROTOCOL || 'http').toLowerCase();
+    const username = proxy.username || PROXY_USERNAME;
+    const password = proxy.password || PROXY_PASSWORD;
 
     try {
-      // 使用 http 协议
-      const proxyUrl = `http://${ip}:${port}`;
+      const auth = username || password
+        ? `${encodeURIComponent(username)}:${encodeURIComponent(password || '')}@`
+        : '';
+
+      if (protocol.startsWith('socks')) {
+        const proxyUrl = `${protocol}://${auth}${ip}:${port}`;
+        return new SocksProxyAgent(proxyUrl);
+      }
+
+      const proxyUrl = `http://${auth}${ip}:${port}`;
       return new HttpsProxyAgent(proxyUrl);
     } catch (error) {
       logProxy('CREATE_AGENT_ERROR', {
@@ -417,12 +434,13 @@ class AccountPool {
     // 获取代理
     const proxy = await proxyPool.getProxy();
     const agent = proxyPool.createAgent(proxy);
-    const proxyProtocol = proxy && proxy.protocol ? proxy.protocol : 'http';
+    const proxyProtocol = proxy && proxy.protocol ? proxy.protocol : PROXY_DEFAULT_PROTOCOL;
     const proxyInfo = proxy ? `${proxyProtocol}://${proxy.ip}:${proxy.port}` : 'none';
 
     logPool('REGISTER_START', {
       deviceId,
-      proxy: proxyInfo
+      proxy: proxyInfo,
+      proxyAuth: !!(proxy && (proxy.username || proxy.password || PROXY_USERNAME || PROXY_PASSWORD))
     });
 
     try {
@@ -435,6 +453,7 @@ class AccountPool {
       if (agent) {
         axiosConfig.httpsAgent = agent;
         axiosConfig.httpAgent = agent;
+        axiosConfig.proxy = false;
       }
 
       const response = await axios.get(url, axiosConfig);
