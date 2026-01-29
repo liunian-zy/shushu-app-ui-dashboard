@@ -185,6 +185,9 @@
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 
 ### 微调
+- **[devops]**: 内网环境统一使用根目录 `.env` 并兼容从 server 目录读取
+  - 类型: 微调（无方案包）
+  - 文件: server/internal/config/config.go:38-40, .env:1-26, server/.env:1-2
 - **[devops]**: 内网 Web Nginx 放开上传体积限制以避免 413
   - 类型: 微调（无方案包）
   - 文件: web/nginx.conf.template:1-18, docker-compose.yml:49-66, .env:1-18

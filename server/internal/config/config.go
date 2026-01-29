@@ -36,7 +36,7 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-  _ = godotenv.Load()
+  _ = godotenv.Load("../.env", ".env")
 
   redisDB := 0
   if raw := os.Getenv("REDIS_DB"); raw != "" {
