@@ -745,7 +745,6 @@ const UploadField = ({
         src={preview}
         alt={label}
         style={{ width: "100%", maxHeight: 240, borderRadius: 12, objectFit: "contain" }}
-        imgStyle={{ objectFit: "contain" }}
       />
     );
   };
@@ -895,7 +894,7 @@ const UploadField = ({
                   value={resizeMode}
                   onChange={setResizeMode}
                   options={[
-                    { value: "contain", label: "等比缩放（不裁剪）", disabled: ratioConfig && hasRatioViolation },
+                    { value: "contain", label: "等比缩放（不裁剪）", disabled: !!ratioConfig && hasRatioViolation },
                     { value: "cover", label: "裁剪填充（保持比例）" },
                     { value: "fill", label: "拉伸到目标尺寸" }
                   ]}

@@ -363,7 +363,7 @@ const BannerPanel = ({ version, request, uploadFile, notify, operatorId }: Banne
     if (!batchRule?.ratio_width || !batchRule?.ratio_height) {
       return null;
     }
-    const gcd = (a: number, b: number) => (b === 0 ? a : gcd(b, a % b));
+    const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
     const baseGcd = gcd(batchRule.ratio_width, batchRule.ratio_height);
     const baseW = Math.max(1, Math.floor(batchRule.ratio_width / baseGcd));
     const baseH = Math.max(1, Math.floor(batchRule.ratio_height / baseGcd));
@@ -1601,7 +1601,7 @@ const BannerPanel = ({ version, request, uploadFile, notify, operatorId }: Banne
                     value={batchResizeMode}
                     onChange={(value) => setBatchResizeMode(value)}
                     options={[
-                      { value: "contain", label: "等比缩放（不裁剪）", disabled: batchRatioConfig && batchHasRatioViolation },
+                      { value: "contain", label: "等比缩放（不裁剪）", disabled: !!batchRatioConfig && batchHasRatioViolation },
                       { value: "cover", label: "裁剪填充（保持比例）" },
                       { value: "fill", label: "拉伸到目标尺寸" }
                     ]}

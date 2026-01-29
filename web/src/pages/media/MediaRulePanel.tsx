@@ -505,7 +505,7 @@ const MediaRulePanel = ({ request }: MediaRulePanelProps) => {
               <Col span={12}>
                 <Form.Item label="模块Key" name="module_key" rules={[{ required: true, message: "请输入模块Key" }]}>
                   <Select
-                    mode="combobox"
+                    mode="tags"
                     options={moduleKeyOptions}
                     placeholder="如：banners:left_top"
                     showSearch

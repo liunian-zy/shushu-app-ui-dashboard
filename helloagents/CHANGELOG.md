@@ -65,6 +65,8 @@
 ### 修复
 - **[devops]**: Web 反代上游改为可配置的 `API_UPSTREAM`
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 修复生产构建类型错误并兼容 AntD Select/Image 类型
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[web-ui]**: 任务操作历史显示提交人真实姓名并补齐完成上传文案
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[server-api]**: 任务操作历史接口补充操作人姓名与用户名

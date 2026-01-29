@@ -39,6 +39,8 @@ type PreferenceItem = {
   music_url?: string | null;
   music_text?: string | null;
   desc?: string | null;
+  submit_status?: string | null;
+  last_submit_at?: string | null;
 };
 
 type PreferencePanelProps = {
