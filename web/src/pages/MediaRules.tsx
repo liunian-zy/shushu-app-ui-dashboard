@@ -11,6 +11,7 @@ const { Title, Text } = Typography;
 const MediaRules = () => {
   const { token, user } = useAuth();
   const [messageApi, contextHolder] = message.useMessage();
+  const isAdmin = user?.role === "admin";
 
   const notify: Notify = {
     success: (msg) => messageApi.success(msg),
@@ -62,23 +63,27 @@ const MediaRules = () => {
   };
 
   const tabs = [
-    {
-      key: "rules",
-      label: "规则配置",
-      children: <MediaRulePanel request={request} />
-    },
-    {
-      key: "tool",
-      label: "压缩工具",
-      children: (
-        <MediaTransformPanel request={request} uploadFile={uploadFile} notify={notify} operatorId={user?.id ?? null} />
-      )
-    },
-    {
-      key: "templates",
-      label: "身份模板",
-      children: <IdentityTemplatePanel request={request} uploadFile={uploadFile} />
-    },
+    ...(isAdmin
+      ? [
+          {
+            key: "rules",
+            label: "规则配置",
+            children: <MediaRulePanel request={request} />
+          },
+          {
+            key: "tool",
+            label: "压缩工具",
+            children: (
+              <MediaTransformPanel request={request} uploadFile={uploadFile} notify={notify} operatorId={user?.id ?? null} />
+            )
+          },
+          {
+            key: "templates",
+            label: "身份模板",
+            children: <IdentityTemplatePanel request={request} uploadFile={uploadFile} />
+          }
+        ]
+      : []),
     {
       key: "tts-presets",
       label: "TTS 预设",
@@ -94,7 +99,9 @@ const MediaRules = () => {
       </Title>
       <Card style={{ borderRadius: 20 }}>
         <Text type="secondary">
-          配置图片/视频/音频的尺寸、大小与格式规则，并管理压缩方案与身份模板。
+          {isAdmin
+            ? "配置图片/视频/音频的尺寸、大小与格式规则，并管理压缩方案与身份模板。"
+            : "当前仅开放 TTS 预设配置。"}
         </Text>
       </Card>
       <Tabs items={tabs} />

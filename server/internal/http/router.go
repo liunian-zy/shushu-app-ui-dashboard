@@ -133,9 +133,9 @@ func NewRouter(cfg *config.Config, deps *Deps) *gin.Engine {
 
   presetHandler := handlers.NewTTSPresetHandler(deps.DB)
   secured.GET("/tts/presets", presetHandler.List)
-  secured.POST("/tts/presets", middleware.RequireAdmin(), presetHandler.Create)
-  secured.PUT("/tts/presets/:id", middleware.RequireAdmin(), presetHandler.Update)
-  secured.DELETE("/tts/presets/:id", middleware.RequireAdmin(), presetHandler.Delete)
+  secured.POST("/tts/presets", presetHandler.Create)
+  secured.PUT("/tts/presets/:id", presetHandler.Update)
+  secured.DELETE("/tts/presets/:id", presetHandler.Delete)
 
   ttsHandler := handlers.NewTTSHandler(cfg, deps.DB, deps.Redis)
   secured.POST("/tts/convert", ttsHandler.Convert)

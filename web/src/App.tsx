@@ -55,8 +55,7 @@ const menuItems: Array<{
   {
     key: "/media-rules",
     icon: <AuditOutlined />,
-    label: <NavLink to="/media-rules">媒体规则</NavLink>,
-    adminOnly: true
+    label: <NavLink to="/media-rules">媒体规则</NavLink>
   },
   {
     key: "/users",
@@ -249,11 +248,7 @@ const App = () => {
           <Route path="/entry" element={<ContentEntry />} />
           <Route
             path="/media-rules"
-            element={
-              <RequireAdmin>
-                <MediaRules />
-              </RequireAdmin>
-            }
+            element={<MediaRules />}
           />
           <Route
             path="/users"

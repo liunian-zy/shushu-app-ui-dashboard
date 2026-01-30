@@ -25,6 +25,8 @@
   - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
 - **[web-ui]**: 内容录入语音面板支持快速新增预设
   - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
+- **[web-ui]**: 媒体规则页向成员开放 TTS 预设配置入口
+  - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
 - **[web-ui]**: 轮播图批量上传支持智能压缩参数与同位置限制
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[web-ui]**: 内容录入模块列表增加提交状态/启用状态等筛选条件
