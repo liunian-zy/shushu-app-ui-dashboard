@@ -71,6 +71,10 @@
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 
 ### 修复
+- **[server-api]**: 同步写入改为按自然键更新并仅删除草稿缺失项，避免线上数据 ID 重置
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[server-api]**: 同步新增 draft→线上 ID 映射并支持 target_id 更新，避免重命名导致误删
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[server-api]**: 迁移忽略重复列错误并兼容新增情绪列
   - 方案: [202601282017_tts-presets](plan/202601282017_tts-presets/)
 - **[web-ui]**: TTS 预设情绪选择移除不兼容 loading 属性以修复构建
