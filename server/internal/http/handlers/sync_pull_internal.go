@@ -421,6 +421,7 @@ func importSnapshotModulesTx(tx *sql.Tx, draftVersionID int64, snapshot *SyncPul
 
 	bannerMappings := make([]SyncIDMapping, 0, len(snapshot.Banners))
 	for _, item := range snapshot.Banners {
+		bannerType := mapBannerTypeFromOnline(intValue(item.Type, 0))
 		result, err := tx.Exec(
 			"INSERT INTO app_db_banners (draft_version_id, title, image, sort, is_active, type, app_version_name, created_by, updated_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			draftVersionID,
@@ -428,7 +429,7 @@ func importSnapshotModulesTx(tx *sql.Tx, draftVersionID int64, snapshot *SyncPul
 			nullIfEmpty(item.Image),
 			intValue(item.Sort, 0),
 			intValue(item.IsActive, 1),
-			intValue(item.Type, 0),
+			bannerType,
 			nullIfEmpty(appVersionName),
 			nullableID(operatorID),
 			nullableID(operatorID),
@@ -608,4 +609,11 @@ func intValue(value *int64, fallback int64) int64 {
 		return *value
 	}
 	return fallback
+}
+
+func mapBannerTypeFromOnline(value int64) int64 {
+	if value == 0 {
+		return 3
+	}
+	return value
 }

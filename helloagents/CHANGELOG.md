@@ -207,6 +207,9 @@
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 
 ### 微调
+- **[server-api]**: 线上拉取轮播图类型 0 回填映射为右侧轮播类型 3
+  - 类型: 微调（无方案包）
+  - 文件: server/internal/http/handlers/sync_pull_internal.go:422
 - **[server-api]**: 线上快照导入补齐 URL 编码与导入审计日志
   - 类型: 微调（无方案包）
   - 文件: server/internal/http/handlers/sync_pull_internal.go:1
