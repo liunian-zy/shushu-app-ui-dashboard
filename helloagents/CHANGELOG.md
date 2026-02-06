@@ -3,6 +3,10 @@
 ## [Unreleased]
 
 ### 新增
+- **[server-api]**: 新增线上版本列表与快照接口，支持内网拉取线上完整配置
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
+- **[web-ui]**: 版本配置页新增“从线上导入”入口，可导入到新草稿或覆盖既有草稿
+  - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[tts-service]**: TTS 增加语音详情查询以提供情绪信息
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 - **[devops]**: Web 前端改为 Nginx 生产构建并使用 `WEB_PORT` 暴露
@@ -203,6 +207,12 @@
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 
 ### 微调
+- **[server-api]**: 线上快照导入补齐 URL 编码与导入审计日志
+  - 类型: 微调（无方案包）
+  - 文件: server/internal/http/handlers/sync_pull_internal.go:1
+- **[web-ui]**: 线上导入覆盖草稿前增加二次确认提示
+  - 类型: 微调（无方案包）
+  - 文件: web/src/pages/VersionManager.tsx:1
 - **[devops]**: 内网环境统一使用根目录 `.env` 并兼容从 server 目录读取
   - 类型: 微调（无方案包）
   - 文件: server/internal/config/config.go:38-40, .env:1-26, server/.env:1-2

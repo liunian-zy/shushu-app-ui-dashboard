@@ -12,6 +12,17 @@ export type DraftVersion = {
   last_submit_at?: string | null;
   confirmed_by?: number | null;
   confirmed_at?: string | null;
+  target_app_version_name_id?: number | null;
+};
+
+export type OnlineVersion = {
+  target_app_version_name_id: number;
+  app_version_name?: string | null;
+  location_name?: string | null;
+  feishu_field_names?: string | null;
+  ai_modal?: string | null;
+  status?: number | null;
+  updated_at?: string | null;
 };
 
 export const baseFeishuFields = [

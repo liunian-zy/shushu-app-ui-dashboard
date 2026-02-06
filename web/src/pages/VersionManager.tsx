@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Card, Empty, Input, Modal, Space, Table, Tag, Typography, message } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import { Button, Card, Empty, Input, Modal, Select, Space, Table, Tag, Typography, message } from "antd";
+import { CloudDownloadOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import VersionEditorModal, { VersionEditorValues } from "./version/VersionEditorModal";
-import { DraftVersion, formatDate } from "./version/constants";
+import { DraftVersion, formatDate, OnlineVersion } from "./version/constants";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -18,6 +18,12 @@ const VersionManager = () => {
   const [editorSubmitting, setEditorSubmitting] = useState(false);
   const [editingVersion, setEditingVersion] = useState<DraftVersion | null>(null);
   const [syncingId, setSyncingId] = useState<number | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [onlineLoading, setOnlineLoading] = useState(false);
+  const [onlineVersions, setOnlineVersions] = useState<OnlineVersion[]>([]);
+  const [selectedOnlineId, setSelectedOnlineId] = useState<number | null>(null);
+  const [selectedDraftId, setSelectedDraftId] = useState<number | null>(null);
 
   const request = async <T,>(path: string, options: RequestInit = {}): Promise<T> => {
     if (!token) {
@@ -177,6 +183,69 @@ const VersionManager = () => {
     }
   };
 
+  const loadOnlineVersions = async () => {
+    setOnlineLoading(true);
+    try {
+      const res = await request<{ data: OnlineVersion[] }>("/api/sync/online/versions");
+      setOnlineVersions(res.data || []);
+    } catch (error) {
+      messageApi.error(error instanceof Error ? error.message : "获取线上版本失败");
+    } finally {
+      setOnlineLoading(false);
+    }
+  };
+
+  const openImportModal = () => {
+    setImportOpen(true);
+    setSelectedOnlineId(null);
+    setSelectedDraftId(null);
+    void loadOnlineVersions();
+  };
+
+  const executeImport = async (draftId: number | null) => {
+    setImporting(true);
+    try {
+      const payload: Record<string, unknown> = {
+        target_app_version_name_id: selectedOnlineId
+      };
+      if (draftId) {
+        payload.draft_version_id = draftId;
+      }
+      await request("/api/sync/import", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      messageApi.success("已从线上导入到草稿");
+      setImportOpen(false);
+      void loadVersions();
+    } catch (error) {
+      if (error instanceof Error) {
+        messageApi.error(error.message);
+      }
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!selectedOnlineId) {
+      messageApi.warning("请先选择线上版本");
+      return;
+    }
+    if (selectedDraftId) {
+      Modal.confirm({
+        title: "确认覆盖当前草稿？",
+        content: "覆盖后将清空目标草稿的现有模块数据并导入线上版本。",
+        okText: "确认覆盖",
+        cancelText: "取消",
+        okButtonProps: { danger: true },
+        onOk: () => executeImport(selectedDraftId)
+      });
+      return;
+    }
+    await executeImport(null);
+  };
+
   const renderFields = (fields?: string[] | null) => {
     if (!fields || fields.length === 0) {
       return <Text type="secondary">未配置</Text>;
@@ -276,6 +345,9 @@ const VersionManager = () => {
             <Button icon={<ReloadOutlined />} onClick={loadVersions}>
               刷新
             </Button>
+            <Button icon={<CloudDownloadOutlined />} onClick={openImportModal}>
+              从线上导入
+            </Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>
               新建版本
             </Button>
@@ -306,6 +378,52 @@ const VersionManager = () => {
         }}
         onSubmit={handleSubmit}
       />
+
+      <Modal
+        title="从线上导入版本"
+        open={importOpen}
+        onCancel={() => setImportOpen(false)}
+        onOk={handleImport}
+        confirmLoading={importing}
+        okText="开始导入"
+        cancelText="取消"
+      >
+        <Space direction="vertical" style={{ width: "100%" }} size={12}>
+          <div>
+            <Text strong>线上版本</Text>
+            <Select
+              style={{ width: "100%", marginTop: 8 }}
+              showSearch
+              loading={onlineLoading}
+              placeholder="请选择线上版本"
+              optionFilterProp="label"
+              value={selectedOnlineId}
+              onChange={(value) => setSelectedOnlineId(value)}
+              options={onlineVersions.map((item) => ({
+                value: item.target_app_version_name_id,
+                label: `${item.location_name || "未命名景区"} / ${item.app_version_name || "未命名版本"}`
+              }))}
+            />
+          </div>
+          <div>
+            <Text strong>导入目标草稿（可选）</Text>
+            <Select
+              style={{ width: "100%", marginTop: 8 }}
+              allowClear
+              placeholder="不选则创建新草稿"
+              value={selectedDraftId}
+              onChange={(value) => setSelectedDraftId(value ?? null)}
+              options={versions.map((item) => ({
+                value: item.id,
+                label: `${item.location_name || "未命名景区"} / ${item.app_version_name || "未命名版本"}`
+              }))}
+            />
+          </div>
+          <Text type="secondary">
+            导入后将覆盖目标草稿下的版本配置与内容模块数据，并建立线上映射关系。
+          </Text>
+        </Space>
+      </Modal>
     </Space>
   );
 };
