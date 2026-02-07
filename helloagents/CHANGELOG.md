@@ -207,6 +207,24 @@
   - 方案: [202601261831_app-ui-plan-system](plan/202601261831_app-ui-plan-system/)
 
 ### 微调
+- **[server-api]**: 新增管理员用户更新接口与成员自助修改密码接口
+  - 类型: 微调（无方案包）
+  - 文件: server/internal/http/handlers/user_handler.go:1, server/internal/http/router.go:49
+- **[web-ui]**: 账号管理支持编辑用户信息/状态与可选重置密码
+  - 类型: 微调（无方案包）
+  - 文件: web/src/pages/Users.tsx:1
+- **[web-ui]**: 顶部用户菜单新增“修改密码”入口并接入自助改密接口
+  - 类型: 微调（无方案包）
+  - 文件: web/src/App.tsx:1
+- **[web-ui]**: 左侧菜单栏固定为独立滚动，不随右侧内容滚动
+  - 类型: 微调（无方案包）
+  - 文件: web/src/App.tsx:1
+- **[web-ui]**: 内容录入排序模块新增拖动批量排序（sort越大越靠前）
+  - 类型: 微调（无方案包）
+  - 文件: web/src/pages/content/SortReorderModal.tsx:1, web/src/pages/content/BannerPanel.tsx:1, web/src/pages/content/IdentityPanel.tsx:1, web/src/pages/content/ScenePanel.tsx:1, web/src/pages/content/PreferencePanel.tsx:1
+- **[web-ui]**: 内容录入排序模块状态字段改为行内开关即时更新
+  - 类型: 微调（无方案包）
+  - 文件: web/src/pages/content/BannerPanel.tsx:1, web/src/pages/content/IdentityPanel.tsx:1, web/src/pages/content/ScenePanel.tsx:1, web/src/pages/content/PreferencePanel.tsx:1
 - **[server-api]**: 线上拉取轮播图类型 0 回填映射为右侧轮播类型 3
   - 类型: 微调（无方案包）
   - 文件: server/internal/http/handlers/sync_pull_internal.go:422
@@ -231,6 +249,16 @@
 - **[server-api]**: 同步上传时避免在读取行内执行更新以修复 busy buffer
   - 类型: 微调（无方案包）
   - 文件: server/internal/http/handlers/task_upload.go:122
+
+- **[web-ui]**: 身份/场景/偏好模块批量排序改为列表内拖拽排序模式（移除弹窗排序）
+  - 类型: 微调（无方案包）
+  - 文件: web/src/pages/content/IdentityPanel.tsx:1, web/src/pages/content/ScenePanel.tsx:1, web/src/pages/content/PreferencePanel.tsx:1
+- **[web-ui]**: 额外配置模块补齐状态行内开关并支持列表内拖拽排序
+  - 类型: 微调（无方案包）
+  - 文件: web/src/pages/content/ConfigExtraPanel.tsx:1
+- **[web-ui]**: 带排序字段的内容录入列表统一按 sort/step_index 倒序显示
+  - 类型: 微调（无方案包）
+  - 文件: web/src/pages/content/BannerPanel.tsx:1, web/src/pages/content/IdentityPanel.tsx:1, web/src/pages/content/ScenePanel.tsx:1, web/src/pages/content/PreferencePanel.tsx:1, web/src/pages/content/ConfigExtraPanel.tsx:1
 
 ## [X.Y.Z] - YYYY-MM-DD
 

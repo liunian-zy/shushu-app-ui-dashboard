@@ -1,6 +1,7 @@
+import { useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { BrowserRouter, NavLink, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { Avatar, Button, Dropdown, Layout, Menu, Result, Space, Spin, Typography } from "antd";
+import { Avatar, Button, Dropdown, Form, Input, Layout, Menu, Modal, Result, Space, Spin, Typography, message } from "antd";
 import type { MenuProps } from "antd";
 import {
   AppstoreOutlined,
@@ -88,10 +89,21 @@ const FullScreenLoading = () => {
   );
 };
 
+type ChangePasswordFormValues = {
+  old_password?: string;
+  new_password?: string;
+  confirm_password?: string;
+};
+
 const AppLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
+  const [messageApi, contextHolder] = message.useMessage();
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  const [passwordForm] = Form.useForm<ChangePasswordFormValues>();
+
   const visibleMenuItems = menuItems
     .filter((item) => !item.adminOnly || user?.role === "admin")
     .map(({ adminOnly, ...item }) => item);
@@ -99,7 +111,51 @@ const AppLayout = () => {
   const displayName = user?.display_name?.trim() || user?.username || "未登录";
   const roleLabel = user?.role === "admin" ? "管理员" : "成员";
 
+  const request = async (path: string, options: RequestInit = {}) => {
+    if (!token) {
+      throw new Error("缺少登录凭证");
+    }
+    const headers = new Headers(options.headers);
+    headers.set("Authorization", `Bearer ${token}`);
+    if (options.body && !headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
+    const response = await fetch(path, { ...options, headers });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error((data as { error?: string }).error || "请求失败");
+    }
+    return data;
+  };
+
+  const handleChangePassword = async () => {
+    try {
+      const values = await passwordForm.validateFields();
+      setPasswordSubmitting(true);
+      await request("/api/users/me/password", {
+        method: "POST",
+        body: JSON.stringify({
+          old_password: values.old_password,
+          new_password: values.new_password
+        })
+      });
+      messageApi.success("密码修改成功");
+      setPasswordOpen(false);
+      passwordForm.resetFields();
+    } catch (error) {
+      if (error instanceof Error) {
+        messageApi.error(error.message);
+      }
+    } finally {
+      setPasswordSubmitting(false);
+    }
+  };
+
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
+    if (String(key) === "change-password") {
+      setPasswordOpen(true);
+      return;
+    }
     if (String(key) === "logout") {
       logout();
       navigate("/login", { replace: true });
@@ -111,6 +167,10 @@ const AppLayout = () => {
       key: "role",
       label: `角色：${roleLabel}`,
       disabled: true
+    },
+    {
+      key: "change-password",
+      label: "修改密码"
     },
     {
       type: "divider"
@@ -128,9 +188,15 @@ const AppLayout = () => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
+      {contextHolder}
       <Sider
         width={240}
         style={{
+          position: "fixed",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          overflowY: "auto",
           background: "rgba(255,255,255,0.78)",
           borderRight: "1px solid rgba(29,26,23,0.08)"
         }}
@@ -141,19 +207,17 @@ const AppLayout = () => {
           </Title>
           <Text type="secondary">景区配置协作平台</Text>
         </div>
-        <Menu
-          mode="inline"
-          items={visibleMenuItems}
-          selectedKeys={[activeKey]}
-          style={{ background: "transparent", borderRight: 0 }}
-        />
+        <Menu mode="inline" items={visibleMenuItems} selectedKeys={[activeKey]} style={{ background: "transparent", borderRight: 0 }} />
       </Sider>
-      <Layout>
+      <Layout style={{ marginLeft: 240, minHeight: "100vh" }}>
         <Header
           style={{
             background: "rgba(255,255,255,0.65)",
             borderBottom: "1px solid rgba(29,26,23,0.08)",
-            padding: "0 28px"
+            padding: "0 28px",
+            position: "sticky",
+            top: 0,
+            zIndex: 50
           }}
         >
           <div
@@ -189,6 +253,45 @@ const AppLayout = () => {
           <Outlet />
         </Content>
       </Layout>
+
+      <Modal
+        title="修改密码"
+        open={passwordOpen}
+        onCancel={() => {
+          setPasswordOpen(false);
+          passwordForm.resetFields();
+        }}
+        onOk={handleChangePassword}
+        okButtonProps={{ loading: passwordSubmitting }}
+        destroyOnClose
+      >
+        <Form form={passwordForm} layout="vertical" preserve={false}>
+          <Form.Item label="旧密码" name="old_password" rules={[{ required: true, message: "请输入旧密码" }]}> 
+            <Input.Password placeholder="请输入当前登录密码" />
+          </Form.Item>
+          <Form.Item label="新密码" name="new_password" rules={[{ required: true, message: "请输入新密码" }]}> 
+            <Input.Password placeholder="请输入新密码" />
+          </Form.Item>
+          <Form.Item
+            label="确认新密码"
+            name="confirm_password"
+            dependencies={["new_password"]}
+            rules={[
+              { required: true, message: "请再次输入新密码" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("new_password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error("两次输入的新密码不一致"));
+                }
+              })
+            ]}
+          >
+            <Input.Password placeholder="请再次输入新密码" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Layout>
   );
 };
@@ -246,10 +349,7 @@ const App = () => {
             }
           />
           <Route path="/entry" element={<ContentEntry />} />
-          <Route
-            path="/media-rules"
-            element={<MediaRules />}
-          />
+          <Route path="/media-rules" element={<MediaRules />} />
           <Route
             path="/users"
             element={

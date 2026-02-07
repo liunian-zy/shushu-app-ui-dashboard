@@ -164,6 +164,11 @@ const BannerPanel = ({ version, request, uploadFile, notify, operatorId }: Banne
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<BannerItem[]>([]);
   const [batchSubmitLoading, setBatchSubmitLoading] = useState(false);
+  const [sortMode, setSortMode] = useState(false);
+  const [sortSaving, setSortSaving] = useState(false);
+  const [sortDraft, setSortDraft] = useState<BannerItem[]>([]);
+  const [draggingSortId, setDraggingSortId] = useState<number | null>(null);
+  const [statusUpdating, setStatusUpdating] = useState<Record<number, boolean>>({});
   const [filterType, setFilterType] = useState<number | null>(null);
   const [filterSubmitStatus, setFilterSubmitStatus] = useState<string | null>(null);
   const [filterActiveStatus, setFilterActiveStatus] = useState<number | null>(null);
@@ -1127,25 +1132,112 @@ const BannerPanel = ({ version, request, uploadFile, notify, operatorId }: Banne
   );
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      if (filterType != null && (item.type ?? 1) !== filterType) {
-        return false;
-      }
-      if (filterActiveStatus != null && (item.is_active ?? 1) !== filterActiveStatus) {
-        return false;
-      }
-      if (filterSubmitStatus) {
-        if (filterSubmitStatus === "none") {
-          if (item.submit_status) {
-            return false;
-          }
-        } else if (item.submit_status !== filterSubmitStatus) {
+    return items
+      .filter((item) => {
+        if (filterType != null && (item.type ?? 1) !== filterType) {
           return false;
         }
-      }
-      return true;
-    });
+        if (filterActiveStatus != null && (item.is_active ?? 1) !== filterActiveStatus) {
+          return false;
+        }
+        if (filterSubmitStatus) {
+          if (filterSubmitStatus === "none") {
+            if (item.submit_status) {
+              return false;
+            }
+          } else if (item.submit_status !== filterSubmitStatus) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .sort((a, b) => (b.sort ?? 0) - (a.sort ?? 0) || a.id - b.id);
   }, [filterActiveStatus, filterSubmitStatus, filterType, items]);
+
+  const moveSortItem = (dragId: number, hoverId: number) => {
+    if (dragId === hoverId) {
+      return;
+    }
+    setSortDraft((prev) => {
+      const from = prev.findIndex((item) => item.id === dragId);
+      const to = prev.findIndex((item) => item.id === hoverId);
+      if (from < 0 || to < 0) {
+        return prev;
+      }
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  };
+
+  const enterSortMode = () => {
+    if (!filteredItems.length) {
+      notify.warning("没有可排序的数据");
+      return;
+    }
+    setSortDraft(filteredItems);
+    setSortMode(true);
+  };
+
+  const cancelSortMode = () => {
+    setSortMode(false);
+    setDraggingSortId(null);
+    setSortDraft([]);
+  };
+
+  const applySortMode = async () => {
+    if (!sortDraft.length) {
+      cancelSortMode();
+      return;
+    }
+    setSortSaving(true);
+    try {
+      const total = sortDraft.length;
+      const results = await Promise.allSettled(
+        sortDraft.map((item, index) =>
+          request(`/api/draft/banners/${item.id}`, {
+            method: "PUT",
+            body: JSON.stringify({
+              sort: total - index,
+              updated_by: operatorId ?? undefined
+            })
+          })
+        )
+      );
+      const failed = results.filter((item) => item.status === "rejected").length;
+      if (failed > 0) {
+        notify.warning(`批量排序完成，失败 ${failed} 条`);
+      } else {
+        notify.success("批量排序已应用");
+      }
+      cancelSortMode();
+      void loadItems();
+    } finally {
+      setSortSaving(false);
+    }
+  };
+
+  const handleInlineStatusChange = async (record: BannerItem, checked: boolean) => {
+    setStatusUpdating((prev) => ({ ...prev, [record.id]: true }));
+    try {
+      await request(`/api/draft/banners/${record.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          is_active: checked ? 1 : 0,
+          updated_by: operatorId ?? undefined
+        })
+      });
+      notify.success("状态已更新");
+      void loadItems();
+    } catch (error) {
+      if (error instanceof Error) {
+        notify.error(error.message);
+      }
+    } finally {
+      setStatusUpdating((prev) => ({ ...prev, [record.id]: false }));
+    }
+  };
 
   const columns = [
     {
@@ -1170,7 +1262,14 @@ const BannerPanel = ({ version, request, uploadFile, notify, operatorId }: Banne
       title: "状态",
       dataIndex: "is_active",
       key: "is_active",
-      render: (value: number) => (value === 0 ? <Tag>停用</Tag> : <Tag color="green">启用</Tag>)
+      render: (value: number, record: BannerItem) => (
+        <Switch
+          checked={(value ?? 1) === 1}
+          disabled={sortMode}
+          loading={!!statusUpdating[record.id]}
+          onChange={(checked) => handleInlineStatusChange(record, checked)}
+        />
+      )
     },
     {
       title: "提交状态",
@@ -1335,6 +1434,20 @@ const BannerPanel = ({ version, request, uploadFile, notify, operatorId }: Banne
             <Button icon={<UploadOutlined />} onClick={openBatch} disabled={!canEdit}>
               批量上传
             </Button>
+            {!sortMode ? (
+              <Button onClick={enterSortMode} disabled={!canEdit || !filteredItems.length}>
+                进入排序模式
+              </Button>
+            ) : (
+              <>
+                <Button type="primary" onClick={applySortMode} loading={sortSaving}>
+                  应用排序
+                </Button>
+                <Button onClick={cancelSortMode}>
+                  取消排序
+                </Button>
+              </>
+            )}
             <Button onClick={handleBatchSubmission} loading={batchSubmitLoading} disabled={!selectedRowKeys.length || !canEdit}>
               批量提交
             </Button>
@@ -1383,16 +1496,40 @@ const BannerPanel = ({ version, request, uploadFile, notify, operatorId }: Banne
           <Table
             rowKey="id"
             columns={columns}
-            dataSource={filteredItems}
+            dataSource={sortMode ? sortDraft : filteredItems}
             loading={loading}
             pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ["10", "20", "50"] }}
-            rowSelection={{
-              selectedRowKeys,
-              onChange: (keys, rows) => {
-                setSelectedRowKeys(keys);
-                setSelectedRows(rows as BannerItem[]);
-              }
-            }}
+            rowSelection={
+              sortMode
+                ? undefined
+                : {
+                    selectedRowKeys,
+                    onChange: (keys, rows) => {
+                      setSelectedRowKeys(keys);
+                      setSelectedRows(rows as BannerItem[]);
+                    }
+                  }
+            }
+            onRow={(record) =>
+              sortMode
+                ? {
+                    draggable: true,
+                    style: { cursor: "move" },
+                    onDragStart: () => setDraggingSortId(record.id),
+                    onDragOver: (event) => {
+                      event.preventDefault();
+                      if (draggingSortId != null) {
+                        moveSortItem(draggingSortId, record.id);
+                      }
+                    },
+                    onDrop: (event) => {
+                      event.preventDefault();
+                      setDraggingSortId(null);
+                    },
+                    onDragEnd: () => setDraggingSortId(null)
+                  }
+                : {}
+            }
           />
         ) : (
           <Empty description="请选择景区版本后录入轮播图" />

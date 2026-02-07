@@ -48,6 +48,8 @@ func NewRouter(cfg *config.Config, deps *Deps) *gin.Engine {
 	userHandler := handlers.NewUserHandler(cfg, deps.DB)
 	secured.GET("/users", middleware.RequireAdmin(), userHandler.List)
 	secured.POST("/users", middleware.RequireAdmin(), userHandler.Create)
+	secured.PUT("/users/:id", middleware.RequireAdmin(), userHandler.Update)
+	secured.POST("/users/me/password", userHandler.ChangeMyPassword)
 
 	taskHandler := handlers.NewTaskHandler(cfg, deps.DB, deps.Redis)
 	secured.GET("/tasks", taskHandler.List)

@@ -62,6 +62,11 @@ const ConfigExtraPanel = ({ version, request, uploadFile, generateTTS, notify, o
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<ExtraStepItem[]>([]);
   const [batchSubmitLoading, setBatchSubmitLoading] = useState(false);
+  const [sortMode, setSortMode] = useState(false);
+  const [sortSaving, setSortSaving] = useState(false);
+  const [sortDraft, setSortDraft] = useState<ExtraStepItem[]>([]);
+  const [draggingSortId, setDraggingSortId] = useState<number | null>(null);
+  const [statusUpdating, setStatusUpdating] = useState<Record<number, boolean>>({});
   const [filterFieldName, setFilterFieldName] = useState<string | null>(null);
   const [filterSubmitStatus, setFilterSubmitStatus] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<number | null>(null);
@@ -205,25 +210,112 @@ const ConfigExtraPanel = ({ version, request, uploadFile, generateTTS, notify, o
   );
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      if (filterFieldName && (item.field_name || "") !== filterFieldName) {
-        return false;
-      }
-      if (filterStatus != null && (item.status ?? 1) !== filterStatus) {
-        return false;
-      }
-      if (filterSubmitStatus) {
-        if (filterSubmitStatus === "none") {
-          if (item.submit_status) {
-            return false;
-          }
-        } else if (item.submit_status !== filterSubmitStatus) {
+    return items
+      .filter((item) => {
+        if (filterFieldName && (item.field_name || "") !== filterFieldName) {
           return false;
         }
-      }
-      return true;
-    });
+        if (filterStatus != null && (item.status ?? 1) !== filterStatus) {
+          return false;
+        }
+        if (filterSubmitStatus) {
+          if (filterSubmitStatus === "none") {
+            if (item.submit_status) {
+              return false;
+            }
+          } else if (item.submit_status !== filterSubmitStatus) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .sort((a, b) => (b.step_index ?? 0) - (a.step_index ?? 0) || a.id - b.id);
   }, [filterFieldName, filterStatus, filterSubmitStatus, items]);
+
+  const moveSortItem = (dragId: number, hoverId: number) => {
+    if (dragId === hoverId) {
+      return;
+    }
+    setSortDraft((prev) => {
+      const from = prev.findIndex((item) => item.id === dragId);
+      const to = prev.findIndex((item) => item.id === hoverId);
+      if (from < 0 || to < 0) {
+        return prev;
+      }
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  };
+
+  const enterSortMode = () => {
+    if (!filteredItems.length) {
+      notify.warning("没有可排序的数据");
+      return;
+    }
+    setSortDraft(filteredItems);
+    setSortMode(true);
+  };
+
+  const cancelSortMode = () => {
+    setSortMode(false);
+    setDraggingSortId(null);
+    setSortDraft([]);
+  };
+
+  const applySortMode = async () => {
+    if (!sortDraft.length) {
+      cancelSortMode();
+      return;
+    }
+    setSortSaving(true);
+    try {
+      const total = sortDraft.length;
+      const results = await Promise.allSettled(
+        sortDraft.map((item, index) =>
+          request(`/api/draft/config-extra-steps/${item.id}`, {
+            method: "PUT",
+            body: JSON.stringify({
+              step_index: total - index,
+              updated_by: operatorId ?? undefined
+            })
+          })
+        )
+      );
+      const failed = results.filter((item) => item.status === "rejected").length;
+      if (failed > 0) {
+        notify.warning(`批量排序完成，失败 ${failed} 条`);
+      } else {
+        notify.success("批量排序已应用");
+      }
+      cancelSortMode();
+      void loadItems();
+    } finally {
+      setSortSaving(false);
+    }
+  };
+
+  const handleInlineStatusChange = async (record: ExtraStepItem, checked: boolean) => {
+    setStatusUpdating((prev) => ({ ...prev, [record.id]: true }));
+    try {
+      await request(`/api/draft/config-extra-steps/${record.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          status: checked ? 1 : 0,
+          updated_by: operatorId ?? undefined
+        })
+      });
+      notify.success("状态已更新");
+      void loadItems();
+    } catch (error) {
+      if (error instanceof Error) {
+        notify.error(error.message);
+      }
+    } finally {
+      setStatusUpdating((prev) => ({ ...prev, [record.id]: false }));
+    }
+  };
 
   const handleSaveLocalDraft = () => {
     if (!draftKey) {
@@ -321,7 +413,14 @@ const ConfigExtraPanel = ({ version, request, uploadFile, generateTTS, notify, o
       title: "状态",
       dataIndex: "status",
       key: "status",
-      render: (value: number) => (value === 0 ? <Tag>停用</Tag> : <Tag color="green">启用</Tag>)
+      render: (value: number, record: ExtraStepItem) => (
+        <Switch
+          checked={(value ?? 1) === 1}
+          disabled={sortMode}
+          loading={!!statusUpdating[record.id]}
+          onChange={(checked) => handleInlineStatusChange(record, checked)}
+        />
+      )
     },
     {
       title: "提交状态",
@@ -383,6 +482,18 @@ const ConfigExtraPanel = ({ version, request, uploadFile, generateTTS, notify, o
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()} disabled={!version?.id}>
               新建配置
             </Button>
+            {!sortMode ? (
+              <Button onClick={enterSortMode} disabled={!version?.id || !filteredItems.length}>
+                进入排序模式
+              </Button>
+            ) : (
+              <>
+                <Button type="primary" onClick={applySortMode} loading={sortSaving}>
+                  应用排序
+                </Button>
+                <Button onClick={cancelSortMode}>取消排序</Button>
+              </>
+            )}
             <Button onClick={handleBatchSubmission} loading={batchSubmitLoading} disabled={!selectedRowKeys.length || !version?.id}>
               批量提交
             </Button>
@@ -431,16 +542,40 @@ const ConfigExtraPanel = ({ version, request, uploadFile, generateTTS, notify, o
           <Table
             rowKey="id"
             columns={columns}
-            dataSource={filteredItems}
+            dataSource={sortMode ? sortDraft : filteredItems}
             loading={loading}
             pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ["10", "20", "50"] }}
-            rowSelection={{
-              selectedRowKeys,
-              onChange: (keys, rows) => {
-                setSelectedRowKeys(keys);
-                setSelectedRows(rows as ExtraStepItem[]);
-              }
-            }}
+            rowSelection={
+              sortMode
+                ? undefined
+                : {
+                    selectedRowKeys,
+                    onChange: (keys, rows) => {
+                      setSelectedRowKeys(keys);
+                      setSelectedRows(rows as ExtraStepItem[]);
+                    }
+                  }
+            }
+            onRow={(record) =>
+              sortMode
+                ? {
+                    draggable: true,
+                    style: { cursor: "move" },
+                    onDragStart: () => setDraggingSortId(record.id),
+                    onDragOver: (event) => {
+                      event.preventDefault();
+                      if (draggingSortId != null) {
+                        moveSortItem(draggingSortId, record.id);
+                      }
+                    },
+                    onDrop: (event) => {
+                      event.preventDefault();
+                      setDraggingSortId(null);
+                    },
+                    onDragEnd: () => setDraggingSortId(null)
+                  }
+                : {}
+            }
           />
         ) : (
           <Empty description="请选择景区版本后配置额外步骤" />
